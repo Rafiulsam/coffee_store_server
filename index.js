@@ -7,7 +7,9 @@ require('dotenv').config()
 
 
 //middleware
-app.use(cors())
+app.use(cors({
+  origin: '*'
+}));
 app.use(express.json())
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.sdmdnc2.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`
@@ -30,9 +32,17 @@ async function run() {
     const userCollections = client.db("coffeesDB").collection("users")
 
     app.get("/coffees", async (req, res) => {
-      const result = await coffeeCollections.find().toArray()
-      res.send(result)
-    })
+      console.log("Fetching coffees...");
+      try {
+        const result = await coffeeCollections.find().toArray();
+        console.log("Coffees fetched:", result);
+        res.send(result);
+      } catch (err) {
+        console.error("Error fetching coffees:", err);
+        res.status(500).send({ error: "Internal Server Error" });
+      }
+    });
+    
 
     app.get("/coffees/:id", async (req, res) => {
       const id = req.params.id;
